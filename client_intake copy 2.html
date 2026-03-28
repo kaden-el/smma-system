@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Onboarding</title>
+<script>
+const CONFIG = {
+  agencyName:    "Your Agency Name",
+  agencyTagline: "Your Agency Tagline",
+  agencyEmail:   "hello@youragency.com",
+  primaryColor:  "#1F4E79",
+  accentColor:   "#C45911",
+  // Change this to any word/phrase — give it to each new client
+  accessCode:    "AGENCY2026",
+  logoUrl:       ""
+};
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#F1F5F9;color:#1E293B;min-height:100vh}
+:root{--p:#1F4E79;--pl:#2E75B6;--pb:#EBF2FA;--a:#C45911;--b:#E2E8F0;--t:#64748B}
+#login-screen{position:fixed;inset:0;background:linear-gradient(135deg,var(--p) 0%,#0D2E4D 100%);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px}
+.login-box{background:#fff;border-radius:16px;padding:48px 40px;width:100%;max-width:380px;text-align:center;box-shadow:0 24px 48px rgba(0,0,0,.3)}
+.login-logo{font-size:26px;font-weight:800;color:var(--p);margin-bottom:4px}
+.login-sub{color:var(--t);font-size:13px;margin-bottom:32px}
+.login-box input{width:100%;padding:13px 16px;border:2px solid var(--b);border-radius:8px;font-size:15px;margin-bottom:12px;outline:none;text-align:center;letter-spacing:.1em}
+.login-box input:focus{border-color:var(--p)}
+.login-box button{width:100%;padding:14px;background:var(--p);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer}
+.login-box button:hover{background:var(--pl)}
+.login-err{color:#C00000;font-size:13px;margin-top:10px;display:none}
+.login-footer{margin-top:20px;font-size:12px;color:var(--t)}
+#app{display:none;min-height:100vh}
+.app-header{background:var(--p);padding:20px 32px;display:flex;align-items:center;justify-content:space-between}
+.brand{color:#fff}
+.brand-name{font-size:18px;font-weight:700}
+.brand-tag{font-size:12px;opacity:.7;margin-top:2px}
+.step-indicator{display:flex;align-items:center;gap:8px}
+.step-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:.2s}
+.step-dot.active{background:#fff;transform:scale(1.2)}
+.step-dot.done{background:rgba(255,255,255,.7)}
+.progress-bar{height:4px;background:rgba(255,255,255,.2);position:relative;overflow:hidden}
+.progress-fill{height:100%;background:var(--a);transition:width .4s ease;position:absolute;top:0;left:0}
+.form-container{max-width:720px;margin:0 auto;padding:32px 24px}
+.step{display:none}
+.step.active{display:block}
+.step-header{margin-bottom:28px}
+.step-num{font-size:12px;font-weight:600;color:var(--a);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.step-title{font-size:24px;font-weight:700;color:#0F172A;margin-bottom:8px}
+.step-sub{font-size:14px;color:var(--t);line-height:1.5}
+.card{background:#fff;border-radius:12px;padding:28px;border:1px solid var(--b);margin-bottom:20px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label{font-size:12px;font-weight:600;color:#374151}
+input[type=text],input[type=email],input[type=url],input[type=tel],select,textarea{width:100%;padding:10px 14px;border:1.5px solid var(--b);border-radius:8px;font-size:14px;color:#1E293B;outline:none;font-family:inherit;background:#fff;transition:.15s}
+input:focus,select:focus,textarea:focus{border-color:var(--p);box-shadow:0 0 0 3px var(--pb)}
+textarea{resize:vertical;min-height:80px}
+.hint{font-size:11px;color:var(--t);margin-top:2px}
+.objective-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:8px}
+.obj-card{border:2px solid var(--b);border-radius:10px;padding:14px 16px;cursor:pointer;transition:.15s}
+.obj-card:hover{border-color:var(--pl);background:var(--pb)}
+.obj-card.selected{border-color:var(--p);background:var(--pb)}
+.obj-icon{font-size:22px;margin-bottom:6px}
+.obj-label{font-size:13px;font-weight:600;color:#0F172A}
+.obj-sub{font-size:11px;color:var(--t);margin-top:2px}
+.check-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.check-chip{display:flex;align-items:center;gap:5px;padding:6px 12px;border:1.5px solid var(--b);border-radius:20px;cursor:pointer;font-size:12px;font-weight:500;transition:.15s}
+.check-chip:hover{border-color:var(--pl)}
+.check-chip input{accent-color:var(--p)}
+.check-chip.checked{background:var(--pb);border-color:var(--p);color:var(--p)}
+.budget-slider-wrap{padding:20px 0}
+.budget-display{font-size:32px;font-weight:800;color:var(--p);text-align:center;margin-bottom:8px}
+input[type=range]{width:100%;accent-color:var(--p);cursor:pointer}
+.budget-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--t);margin-top:4px}
+.style-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+.style-card{border:2px solid var(--b);border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:.15s}
+.style-card:hover{border-color:var(--pl)}
+.style-card.selected{border-color:var(--p);background:var(--pb)}
+.style-emoji{font-size:24px;margin-bottom:6px}
+.style-label{font-size:12px;font-weight:600}
+.nav-buttons{display:flex;gap:12px;justify-content:space-between;align-items:center;margin-top:28px;padding-bottom:40px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:.15s}
+.btn-primary{background:var(--p);color:#fff}.btn-primary:hover{background:var(--pl)}
+.btn-outline{background:#fff;color:var(--p);border:1.5px solid var(--b)}.btn-outline:hover{border-color:var(--p)}
+.review-section{margin-bottom:20px}
+.review-title{font-size:12px;font-weight:700;color:var(--a);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--b)}
+.review-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px}
+.review-item{display:flex;flex-direction:column;gap:2px}
+.review-label{font-size:11px;color:var(--t);font-weight:500}
+.review-val{font-weight:500;color:#0F172A}
+#confirm-screen{display:none;text-align:center;padding:60px 24px;max-width:560px;margin:0 auto}
+.confirm-icon{font-size:56px;margin-bottom:16px}
+.confirm-title{font-size:26px;font-weight:700;margin-bottom:8px}
+.confirm-sub{font-size:14px;color:var(--t);margin-bottom:24px;line-height:1.6}
+.confirm-ref{display:inline-block;background:var(--pb);color:var(--p);padding:8px 20px;border-radius:20px;font-size:14px;font-weight:700;margin-bottom:24px}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}.style-grid{grid-template-columns:repeat(2,1fr)}.app-header{padding:16px 20px}.form-container{padding:20px 16px}}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo" id="lg-name">Your Agency</div>
+    <div class="login-sub">Client Onboarding Portal</div>
+    <input type="text" id="access-input" placeholder="ENTER ACCESS CODE" style="text-transform:uppercase" onkeydown="if(event.key==='Enter')checkAccess()">
+    <button onclick="checkAccess()">Get Started →</button>
+    <div class="login-err" id="login-error">Invalid access code. Please check with your agency.</div>
+    <div class="login-footer">Don't have a code? Email <span id="lg-email">hello@youragency.com</span></div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="app-header">
+    <div class="brand">
+      <div class="brand-name" id="header-name">Your Agency</div>
+      <div class="brand-tag">Client Onboarding</div>
+    </div>
+    <div id="step-indicator" class="step-indicator"></div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+
+  <div class="form-container">
+
+    <!-- STEP 1 -->
+    <div class="step active" id="step-1">
+      <div class="step-header">
+        <div class="step-num">Step 1 of 6</div>
+        <div class="step-title">Tell us about your business</div>
+        <div class="step-sub">This helps us understand your brand and build the right campaign for you.</div>
+      </div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="form-group full"><label>Business Name *</label><input type="text" id="biz-name" placeholder="e.g. Smith Plumbing Co."></div>
+          <div class="form-group"><label>Industry / Niche *</label><input type="text" id="biz-industry" placeholder="e.g. Home Services, Fitness, Real Estate"></div>
+          <div class="form-group"><label>City & State / Country *</label><input type="text" id="biz-location" placeholder="e.g. Austin, TX"></div>
+          <div class="form-group"><label>Website URL</label><input type="url" id="biz-website" placeholder="https://yoursite.com"></div>
+          <div class="form-group"><label>Facebook Page URL</label><input type="url" id="biz-facebook" placeholder="https://facebook.com/yourpage"></div>
+          <div class="form-group"><label>Instagram Handle</label><input type="text" id="biz-instagram" placeholder="@yourbusiness"></div>
+          <div class="form-group full"><label>Describe your business in 2–3 sentences *</label><textarea id="biz-desc" rows="3" placeholder="What do you do, who do you serve, and what makes you different?"></textarea></div>
+          <div class="form-group full"><label>What product or service should the ads focus on?</label><textarea id="biz-focus" rows="2" placeholder="e.g. Our premium kitchen remodelling service for homeowners"></textarea></div>
+        </div>
+      </div>
+      <div class="nav-buttons"><div></div><button class="btn btn-primary" onclick="nextStep(1)">Next →</button></div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step" id="step-2">
+      <div class="step-header">
+        <div class="step-num">Step 2 of 6</div>
+        <div class="step-title">What are your goals?</div>
+        <div class="step-sub">Choose the primary outcome you want from your ad campaigns.</div>
+      </div>
+      <div class="card">
+        <label style="margin-bottom:8px;display:block">Primary Campaign Objective *</label>
+        <div class="objective-grid">
+          <div class="obj-card selected" data-obj="Generate Leads" onclick="selectObj(this)"><div class="obj-icon">🎯</div><div class="obj-label">Generate Leads</div><div class="obj-sub">Collect contact info from interested prospects</div></div>
+          <div class="obj-card" data-obj="Drive Sales" onclick="selectObj(this)"><div class="obj-icon">🛒</div><div class="obj-label">Drive Sales</div><div class="obj-sub">Get direct purchases or bookings</div></div>
+          <div class="obj-card" data-obj="Build Awareness" onclick="selectObj(this)"><div class="obj-icon">📣</div><div class="obj-label">Build Awareness</div><div class="obj-sub">Reach new people and grow your brand</div></div>
+          <div class="obj-card" data-obj="Grow Social Following" onclick="selectObj(this)"><div class="obj-icon">📱</div><div class="obj-label">Grow Following</div><div class="obj-sub">Increase page likes and followers</div></div>
+          <div class="obj-card" data-obj="Drive Website Traffic" onclick="selectObj(this)"><div class="obj-icon">🌐</div><div class="obj-label">Website Traffic</div><div class="obj-sub">Send people to your site or landing page</div></div>
+          <div class="obj-card" data-obj="Video Views" onclick="selectObj(this)"><div class="obj-icon">🎬</div><div class="obj-label">Video Views</div><div class="obj-sub">Get your video content seen at scale</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="form-group"><label>Monthly Revenue / Lead Target</label><input type="text" id="goal-target" placeholder="e.g. 20 leads/month, $10k revenue"></div>
+          <div class="form-group"><label>Ideal Timeline to See Results</label>
+            <select id="goal-timeline"><option>As soon as possible (1–2 weeks)</option><option selected>1 month</option><option>2–3 months</option><option>6 months (brand building)</option></select>
+          </div>
+          <div class="form-group full"><label>Anything else about your goals?</label><textarea id="goal-notes" rows="2" placeholder="e.g. We want to dominate our local market before the busy season"></textarea></div>
+        </div>
+      </div>
+      <div class="nav-buttons"><button class="btn btn-outline" onclick="prevStep(2)">← Back</button><button class="btn btn-primary" onclick="nextStep(2)">Next →</button></div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step" id="step-3">
+      <div class="step-header">
+        <div class="step-num">Step 3 of 6</div>
+        <div class="step-title">Who is your ideal customer?</div>
+        <div class="step-sub">The better we understand your audience, the more precisely we can target your ads.</div>
+      </div>
+      <div class="card">
+        <div class="form-group full" style="margin-bottom:16px"><label>Describe your ideal customer in your own words *</label><textarea id="aud-desc" rows="3" placeholder="e.g. Homeowners aged 35–55 with disposable income who want their kitchen renovated"></textarea></div>
+        <div class="form-grid">
+          <div class="form-group full"><label>Age Range (select all that apply)</label>
+            <div class="check-group" id="age-group">
+              <label class="check-chip"><input type="checkbox" value="18-24"> 18–24</label>
+              <label class="check-chip"><input type="checkbox" value="25-34" checked> 25–34</label>
+              <label class="check-chip"><input type="checkbox" value="35-44" checked> 35–44</label>
+              <label class="check-chip"><input type="checkbox" value="45-54" checked> 45–54</label>
+              <label class="check-chip"><input type="checkbox" value="55-64"> 55–64</label>
+              <label class="check-chip"><input type="checkbox" value="65+"> 65+</label>
+            </div>
+          </div>
+          <div class="form-group"><label>Gender Targeting</label>
+            <select id="aud-gender"><option value="all" selected>All genders</option><option value="male">Predominantly male</option><option value="female">Predominantly female</option></select>
+          </div>
+          <div class="form-group"><label>Target Locations</label><input type="text" id="aud-locations" placeholder="e.g. Austin TX, Dallas TX, or nationwide"></div>
+          <div class="form-group full"><label>What interests or behaviours does your ideal customer have?</label><textarea id="aud-interests" rows="2" placeholder="e.g. Home improvement, interior design, high income homeowners"></textarea></div>
+          <div class="form-group full"><label>What is your customer's biggest pain point that you solve?</label><textarea id="aud-pain" rows="2" placeholder="e.g. They want a modern kitchen but don't trust contractors"></textarea></div>
+          <div class="form-group full"><label>Do you have an existing customer list, email list, or website pixel?</label>
+            <select id="aud-existing"><option>No — starting fresh</option><option>Yes — I have a customer email list</option><option>Yes — I have a Meta Pixel on my website</option><option>Yes — I have Google Tag Manager set up</option><option>Yes — all of the above</option></select>
+          </div>
+        </div>
+      </div>
+      <div class="nav-buttons"><button class="btn btn-outline" onclick="prevStep(3)">← Back</button><button class="btn btn-primary" onclick="nextStep(3)">Next →</button></div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step" id="step-4">
+      <div class="step-header">
+        <div class="step-num">Step 4 of 6</div>
+        <div class="step-title">Budget & platforms</div>
+        <div class="step-sub">We'll allocate your budget across the platforms that make most sense for your goals.</div>
+      </div>
+      <div class="card">
+        <label style="margin-bottom:4px;display:block">Monthly Ad Spend Budget *</label>
+        <div class="budget-slider-wrap">
+          <div class="budget-display" id="budget-display">$1,500 / month</div>
+          <input type="range" id="budget-slider" min="0" max="20" value="4" oninput="updateBudget(this.value)">
+          <div class="budget-labels"><span>$300</span><span>$2,500</span><span>$5,000</span><span>$10,000+</span></div>
+        </div>
+        <div class="hint">This is your ad spend budget — separate from any management fees.</div>
+      </div>
+      <div class="card">
+        <label style="margin-bottom:8px;display:block">Which platforms would you like to advertise on? *</label>
+        <div class="check-group" id="platform-group">
+          <label class="check-chip checked"><input type="checkbox" value="Facebook" checked> 📘 Facebook</label>
+          <label class="check-chip checked"><input type="checkbox" value="Instagram" checked> 📸 Instagram</label>
+          <label class="check-chip"><input type="checkbox" value="Google Search"> 🔍 Google Search</label>
+          <label class="check-chip"><input type="checkbox" value="YouTube"> ▶️ YouTube</label>
+          <label class="check-chip"><input type="checkbox" value="TikTok"> 🎵 TikTok</label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="form-group"><label>Preferred Contract Length</label>
+            <select id="contract-length"><option>Month-to-month</option><option selected>3 months</option><option>6 months</option><option>12 months</option></select>
+          </div>
+          <div class="form-group"><label>Ideal Campaign Start Date</label><input type="date" id="start-date"></div>
+          <div class="form-group full"><label>Any budget or timing constraints we should know about?</label><textarea id="budget-notes" rows="2" placeholder="e.g. We need to launch before our busy season in March"></textarea></div>
+        </div>
+      </div>
+      <div class="nav-buttons"><button class="btn btn-outline" onclick="prevStep(4)">← Back</button><button class="btn btn-primary" onclick="nextStep(4)">Next →</button></div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="step" id="step-5">
+      <div class="step-header">
+        <div class="step-num">Step 5 of 6</div>
+        <div class="step-title">Creative assets & brand</div>
+        <div class="step-sub">Great ads start with great creative. Tell us what you have and what style suits your brand.</div>
+      </div>
+      <div class="card">
+        <label style="margin-bottom:8px;display:block">Do you have existing video content we can use or build from?</label>
+        <div class="check-group" id="video-avail">
+          <label class="check-chip"><input type="checkbox" value="Raw footage"> 🎥 Raw footage</label>
+          <label class="check-chip"><input type="checkbox" value="Edited videos"> ✂️ Edited videos</label>
+          <label class="check-chip"><input type="checkbox" value="Before/After content"> 🔄 Before/After</label>
+          <label class="check-chip"><input type="checkbox" value="Testimonials"> 💬 Testimonials</label>
+          <label class="check-chip"><input type="checkbox" value="Product demos"> 📦 Product demos</label>
+          <label class="check-chip"><input type="checkbox" value="None — need to shoot"> 🎬 None — need to shoot</label>
+        </div>
+      </div>
+      <div class="card">
+        <label style="margin-bottom:8px;display:block">What video style best fits your brand? *</label>
+        <div class="style-grid">
+          <div class="style-card selected" data-style="Professional & polished" onclick="selectStyle(this)"><div class="style-emoji">🎩</div><div class="style-label">Professional & Polished</div></div>
+          <div class="style-card" data-style="Raw & authentic" onclick="selectStyle(this)"><div class="style-emoji">📱</div><div class="style-label">Raw & Authentic</div></div>
+          <div class="style-card" data-style="Fun & energetic" onclick="selectStyle(this)"><div class="style-emoji">⚡</div><div class="style-label">Fun & Energetic</div></div>
+          <div class="style-card" data-style="Educational & informative" onclick="selectStyle(this)"><div class="style-emoji">📚</div><div class="style-label">Educational</div></div>
+          <div class="style-card" data-style="Emotional & story-driven" onclick="selectStyle(this)"><div class="style-emoji">❤️</div><div class="style-label">Story-Driven</div></div>
+          <div class="style-card" data-style="UGC / influencer style" onclick="selectStyle(this)"><div class="style-emoji">🤳</div><div class="style-label">UGC / Influencer</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="form-group full"><label>How would you describe your brand personality?</label><input type="text" id="brand-personality" placeholder="e.g. trustworthy, bold, friendly, premium, innovative"></div>
+          <div class="form-group"><label>Brand Colours (if known)</label><input type="text" id="brand-colours" placeholder="e.g. Navy blue and orange"></div>
+          <div class="form-group"><label>Logo / Brand Guide URL</label><input type="url" id="brand-assets-url" placeholder="https://drive.google.com/..."></div>
+          <div class="form-group full"><label>Is there a competitor whose ads you admire? (optional)</label><input type="text" id="competitor-ads" placeholder="e.g. We like how XYZ brand does their videos — very clean and direct"></div>
+          <div class="form-group full"><label>Any creative directions or things to avoid?</label><textarea id="creative-notes" rows="2" placeholder="e.g. Don't use stock footage. Avoid red in the colour palette."></textarea></div>
+        </div>
+      </div>
+      <div class="nav-buttons"><button class="btn btn-outline" onclick="prevStep(5)">← Back</button><button class="btn btn-primary" onclick="nextStep(5)">Next →</button></div>
+    </div>
+
+    <!-- STEP 6 -->
+    <div class="step" id="step-6">
+      <div class="step-header">
+        <div class="step-num">Step 6 of 6</div>
+        <div class="step-title">Contact info & final review</div>
+        <div class="step-sub">Almost done! We'll reach out within 1 business day after reviewing your submission.</div>
+      </div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="form-group"><label>Your Name *</label><input type="text" id="contact-name" placeholder="First and last name"></div>
+          <div class="form-group"><label>Email Address *</label><input type="email" id="contact-email" placeholder="you@yourbusiness.com"></div>
+          <div class="form-group"><label>Phone Number</label><input type="tel" id="contact-phone" placeholder="+1 (555) 000-0000"></div>
+          <div class="form-group"><label>Best Time to Reach You</label>
+            <select id="contact-time"><option>Morning (9am–12pm)</option><option selected>Afternoon (12pm–5pm)</option><option>Evening (5pm–8pm)</option><option>Anytime</option></select>
+          </div>
+          <div class="form-group full"><label>Any final questions or notes?</label><textarea id="contact-notes" rows="2" placeholder="Anything else you want us to know?"></textarea></div>
+        </div>
+      </div>
+      <div class="card" id="review-card">
+        <div style="font-size:14px;font-weight:700;margin-bottom:16px">📋 Review Your Submission</div>
+        <div id="review-content"></div>
+      </div>
+      <div class="nav-buttons"><button class="btn btn-outline" onclick="prevStep(6)">← Back</button><button class="btn btn-primary" onclick="submitForm()">Submit & Download ✓</button></div>
+    </div>
+
+    <!-- CONFIRM -->
+    <div id="confirm-screen">
+      <div class="confirm-icon">🎉</div>
+      <div class="confirm-title">You're all set!</div>
+      <div class="confirm-sub">Your onboarding form has been submitted and a copy is downloading to your device. We'll reach out within 1 business day.</div>
+      <div class="confirm-ref" id="confirm-ref">CLT-XXXXXX</div>
+      <div style="font-size:13px;color:var(--t)">Keep this reference ID for your records.</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+document.getElementById('lg-name').textContent = CONFIG.agencyName;
+document.getElementById('lg-email').textContent = CONFIG.agencyEmail;
+document.getElementById('header-name').textContent = CONFIG.agencyName;
+
+document.querySelectorAll('.check-group').forEach(group=>{
+  group.querySelectorAll('.check-chip').forEach(chip=>{
+    chip.querySelector('input').addEventListener('change',()=>{chip.classList.toggle('checked',chip.querySelector('input').checked);});
+  });
+});
+
+function checkAccess(){
+  const val=document.getElementById('access-input').value.trim().toUpperCase();
+  if(val===CONFIG.accessCode.toUpperCase()){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    buildStepDots(); updateProgress(1); loadSaved();
+  } else {
+    document.getElementById('login-error').style.display='block';
+    document.getElementById('access-input').select();
+  }
+}
+
+let currentStep=1; const TOTAL_STEPS=6; let intakeData=null;
+function buildStepDots(){document.getElementById('step-indicator').innerHTML=Array.from({length:TOTAL_STEPS},(_,i)=>`<div class="step-dot ${i===0?'active':''}" id="dot-${i+1}"></div>`).join('');}
+function updateProgress(step){document.getElementById('progress-fill').style.width=((step-1)/(TOTAL_STEPS-1)*100)+'%';document.querySelectorAll('.step-dot').forEach((d,i)=>{d.className='step-dot'+(i+1===step?' active':(i+1<step?' done':''));});}
+function nextStep(from){if(!validateStep(from))return;saveProgress();document.getElementById('step-'+from).classList.remove('active');currentStep=from+1;document.getElementById('step-'+currentStep).classList.add('active');updateProgress(currentStep);if(currentStep===6)buildReview();window.scrollTo({top:0,behavior:'smooth'});}
+function prevStep(from){document.getElementById('step-'+from).classList.remove('active');currentStep=from-1;document.getElementById('step-'+currentStep).classList.add('active');updateProgress(currentStep);window.scrollTo({top:0,behavior:'smooth'});}
+function validateStep(step){const req={1:['biz-name','biz-industry','biz-location','biz-desc'],2:[],3:['aud-desc'],4:[],5:[],6:['contact-name','contact-email']};let ok=true;(req[step]||[]).forEach(id=>{const el=document.getElementById(id);if(!el||!el.value.trim()){el&&(el.style.borderColor='#C00000');setTimeout(()=>el&&(el.style.borderColor=''),2000);ok=false;}});if(!ok)alert('Please fill in all required fields before continuing.');return ok;}
+function selectObj(el){document.querySelectorAll('.obj-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');}
+function selectStyle(el){document.querySelectorAll('.style-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');}
+
+const BUDGET_STEPS=[300,500,750,1000,1500,2000,2500,3000,4000,5000,6000,7000,8000,9000,10000,12000,15000,20000,25000,30000,50000];
+function updateBudget(v){const val=BUDGET_STEPS[parseInt(v)]||BUDGET_STEPS[BUDGET_STEPS.length-1];document.getElementById('budget-display').textContent='$'+val.toLocaleString()+' / month';}
+updateBudget(4);
+
+function getChecked(groupId){return Array.from(document.querySelectorAll('#'+groupId+' input:checked')).map(i=>i.value).join(', ')||'—';}
+function buildReview(){const data=collectData();document.getElementById('review-content').innerHTML=`<div class="review-section"><div class="review-title">Business</div><div class="review-grid"><div class="review-item"><div class="review-label">Business Name</div><div class="review-val">${data.business.name||'—'}</div></div><div class="review-item"><div class="review-label">Industry</div><div class="review-val">${data.business.industry||'—'}</div></div><div class="review-item"><div class="review-label">Location</div><div class="review-val">${data.business.location||'—'}</div></div><div class="review-item"><div class="review-label">Website</div><div class="review-val">${data.business.website||'—'}</div></div></div></div><div class="review-section"><div class="review-title">Goals & Audience</div><div class="review-grid"><div class="review-item"><div class="review-label">Objective</div><div class="review-val">${data.goals.objective||'—'}</div></div><div class="review-item"><div class="review-label">Target</div><div class="review-val">${data.goals.target||'—'}</div></div><div class="review-item"><div class="review-label">Locations</div><div class="review-val">${data.audience.locations||'—'}</div></div><div class="review-item"><div class="review-label">Age Range</div><div class="review-val">${data.audience.ageRange||'—'}</div></div></div></div><div class="review-section"><div class="review-title">Budget & Platforms</div><div class="review-grid"><div class="review-item"><div class="review-label">Monthly Budget</div><div class="review-val">${data.budget.range||'—'}</div></div><div class="review-item"><div class="review-label">Platforms</div><div class="review-val">${data.budget.platforms||'—'}</div></div><div class="review-item"><div class="review-label">Contract</div><div class="review-val">${data.budget.contractLength||'—'}</div></div><div class="review-item"><div class="review-label">Start Date</div><div class="review-val">${data.budget.startDate||'ASAP'}</div></div></div></div><div class="review-section"><div class="review-title">Contact</div><div class="review-grid"><div class="review-item"><div class="review-label">Name</div><div class="review-val">${data.contact.name||'—'}</div></div><div class="review-item"><div class="review-label">Email</div><div class="review-val">${data.contact.email||'—'}</div></div></div></div>`;}
+
+function collectData(){const v=id=>(document.getElementById(id)||{}).value||'';const budgetVal=BUDGET_STEPS[parseInt(document.getElementById('budget-slider').value)];return{business:{name:v('biz-name'),industry:v('biz-industry'),location:v('biz-location'),website:v('biz-website'),facebook:v('biz-facebook'),instagram:v('biz-instagram'),description:v('biz-desc'),adFocus:v('biz-focus')},goals:{objective:(document.querySelector('.obj-card.selected')||{}).dataset?.obj||'',target:v('goal-target'),timeline:v('goal-timeline'),notes:v('goal-notes')},audience:{description:v('aud-desc'),ageRange:getChecked('age-group'),gender:v('aud-gender'),locations:v('aud-locations'),interests:v('aud-interests'),painPoints:v('aud-pain'),existingData:v('aud-existing')},budget:{range:'$'+budgetVal.toLocaleString()+'/month',rawAmount:budgetVal,platforms:getChecked('platform-group'),contractLength:v('contract-length'),startDate:v('start-date'),notes:v('budget-notes')},creative:{videoAvailability:getChecked('video-avail'),style:(document.querySelector('.style-card.selected')||{}).dataset?.style||'',brandPersonality:v('brand-personality'),brandColours:v('brand-colours'),assetsUrl:v('brand-assets-url'),competitorAds:v('competitor-ads'),notes:v('creative-notes')},contact:{name:v('contact-name'),email:v('contact-email'),phone:v('contact-phone'),bestTime:v('contact-time'),notes:v('contact-notes')}};}
+
+function saveProgress(){try{localStorage.setItem('smma_intake_draft',JSON.stringify(collectData()));}catch(e){}}
+function loadSaved(){try{const d=JSON.parse(localStorage.getItem('smma_intake_draft')||'null');if(!d)return;const set=(id,val)=>{const el=document.getElementById(id);if(el&&val)el.value=val;};if(d.business){set('biz-name',d.business.name);set('biz-industry',d.business.industry);set('biz-location',d.business.location);set('biz-website',d.business.website);set('biz-facebook',d.business.facebook);set('biz-instagram',d.business.instagram);set('biz-desc',d.business.description);}if(d.contact){set('contact-name',d.contact.name);set('contact-email',d.contact.email);set('contact-phone',d.contact.phone);}}catch(e){}}
+
+function submitForm(){
+  if(!validateStep(6))return;
+  intakeData=collectData();
+  const ref='CLT-'+Date.now().toString(36).toUpperCase().slice(-6);
+  intakeData.referenceId=ref; intakeData.status='New'; intakeData.submittedAt=new Date().toISOString();
+  try{const existing=JSON.parse(localStorage.getItem('smma_clients')||'[]');existing.push(intakeData);localStorage.setItem('smma_clients',JSON.stringify(existing));localStorage.removeItem('smma_intake_draft');}catch(e){}
+  document.querySelectorAll('.step').forEach(s=>s.style.display='none');
+  document.getElementById('confirm-screen').style.display='block';
+  document.getElementById('confirm-ref').textContent=ref;
+  document.getElementById('step-indicator').style.display='none';
+  window.scrollTo({top:0,behavior:'smooth'});
+  setTimeout(downloadJSON,800);
+}
+function downloadJSON(){if(!intakeData)return;const blob=new Blob([JSON.stringify(intakeData,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(intakeData.business?.name||'client').replace(/[^a-zA-Z0-9]/g,'_')+'_intake.json';a.click();}
+</script>
+</body>
+</html>
